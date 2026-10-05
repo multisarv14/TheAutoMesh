@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Mail, Lock, User, Zap, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,13 @@ export default function AuthModal({ isOpen, onClose, type: initialType, onSucces
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setType(initialType);
+      setError(null);
+    }
+  }, [initialType, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +67,7 @@ export default function AuthModal({ isOpen, onClose, type: initialType, onSucces
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
-            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl shadow-gray-900/15 border border-gray-100 p-8 overflow-hidden"
+            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl shadow-gray-900/15 border border-gray-100 p-6 sm:p-8 overflow-hidden"
           >
             {/* Top accent bar */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-indigo-500 rounded-t-2xl" />

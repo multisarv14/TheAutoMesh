@@ -5,7 +5,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import session from "express-session";
-import { PrismaClient } from "@prisma/client";
+import mongoose from "mongoose";
+import { MongoMemoryServer } from "mongodb-memory-server";
 import axios from "axios";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -47,12 +48,234 @@ declare module 'express-session' {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const prisma = new PrismaClient();
+async function connectDatabase() {
+  const uri = process.env.MONGODB_URI || "";
+
+  if (uri) {
+    await mongoose.connect(uri);
+    return uri;
+  }
+
+  const memoryServer = await MongoMemoryServer.create();
+  const memoryUri = memoryServer.getUri();
+  process.env.MONGODB_URI = memoryUri;
+  await mongoose.connect(memoryUri);
+  return memoryUri;
+}
+
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  webhookUrl: { type: String, default: null },
+  fbUserId: { type: String, default: null },
+  fbName: { type: String, default: null },
+  fbImage: { type: String, default: null },
+  createdAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+
+const pageSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  name: String,
+  accessToken: String,
+  sub: { type: String, default: null },
+  statusDetails: { type: String, default: null },
+  fbUserId: { type: String, default: null },
+  fbUserName: { type: String, default: null },
+  userId: String,
+  createdAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+
+const formSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  name: String,
+  pageId: String,
+  createdAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+
+const workflowSchema = new mongoose.Schema({
+  name: String,
+  source: { type: String, default: "facebook" },
+  active: { type: Boolean, default: true },
+  userId: String,
+  pageId: String,
+  rules: { type: String, default: "{}" },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+
+const leadSchema = new mongoose.Schema({
+  facebookId: { type: String, required: true, unique: true },
+  formId: String,
+  data: String,
+  createdAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+
+const workflowExecutionSchema = new mongoose.Schema({
+  workflowId: String,
+  leadId: String,
+  status: String,
+  logs: { type: String, default: "[]" },
+  retryCount: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+
+const jobSchema = new mongoose.Schema({
+  type: String,
+  payload: String,
+  status: String,
+  attempts: { type: Number, default: 0 },
+  maxAttempts: { type: Number, default: 3 },
+  error: { type: String, default: null },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+
+const User: any = mongoose.models.User || mongoose.model("User", userSchema);
+const Page: any = mongoose.models.Page || mongoose.model("Page", pageSchema);
+const Form: any = mongoose.models.Form || mongoose.model("Form", formSchema);
+const Workflow: any = mongoose.models.Workflow || mongoose.model("Workflow", workflowSchema);
+const Lead: any = mongoose.models.Lead || mongoose.model("Lead", leadSchema);
+const WorkflowExecution: any = mongoose.models.WorkflowExecution || mongoose.model("WorkflowExecution", workflowExecutionSchema);
+const Job: any = mongoose.models.Job || mongoose.model("Job", jobSchema);
+
+function normalizeMongoDoc<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeMongoDoc(item)) as unknown as T;
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  const obj = { ...value } as any;
+  if (obj._id && !obj.id) {
+    obj.id = String(obj._id);
+  }
+  delete obj._id;
+  delete obj.__v;
+  return obj;
+}
+
+const prisma = {
+  $connect: async () => {
+    if (mongoose.connection.readyState === 0) {
+      await connectDatabase();
+    }
+  },
+  $disconnect: async () => mongoose.disconnect(),
+  user: {
+    findUnique: async ({ where }: any) => {
+      if (where?.email) return await (User as any).findOne({ email: where.email }).lean();
+      if (where?.id) return await (User as any).findById(where.id).lean();
+      return null;
+    },
+    create: async ({ data }: any) => (User as any).create(data),
+    update: async ({ where, data }: any) => {
+      const doc = await (User as any).findOneAndUpdate({ _id: where.id }, { $set: data }, { new: true, runValidators: true });
+      return doc?.toObject ? doc.toObject() : doc;
+    },
+    findMany: async ({ where }: any) => (User as any).find(where || {}).lean()
+  },
+  page: {
+    findUnique: async ({ where }: any) => {
+      const doc = await (Page as any).findOne({ _id: where?.id }).lean();
+      return doc;
+    },
+    findMany: async ({ where }: any) => (Page as any).find(where || {}).lean(),
+    upsert: async ({ where, update, create }: any) => {
+      const doc = await (Page as any).findOneAndUpdate(
+        { _id: where.id },
+        { $set: { ...update, _id: where.id } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      return doc?.toObject ? doc.toObject() : doc;
+    },
+    create: async ({ data }: any) => (Page as any).create(data),
+    update: async ({ where, data }: any) => {
+      const doc = await (Page as any).findOneAndUpdate({ _id: where.id }, { $set: data }, { new: true, runValidators: true });
+      return doc?.toObject ? doc.toObject() : doc;
+    }
+  },
+  form: {
+    upsert: async ({ where, update, create }: any) => {
+      const doc = await (Form as any).findOneAndUpdate(
+        { _id: where.id },
+        { $set: { ...update, _id: where.id } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      return doc?.toObject ? doc.toObject() : doc;
+    },
+    create: async ({ data }: any) => (Form as any).create(data)
+  },
+  workflow: {
+    findMany: async ({ where }: any) => (Workflow as any).find(where || {}).lean(),
+    create: async ({ data }: any) => (Workflow as any).create(data),
+    update: async ({ where, data }: any) => {
+      const doc = await (Workflow as any).findOneAndUpdate({ _id: where.id, ...(where.userId ? { userId: where.userId } : {}) }, { $set: data }, { new: true, runValidators: true });
+      return doc?.toObject ? doc.toObject() : doc;
+    }
+  },
+  lead: {
+    findMany: async ({ where, orderBy, take }: any) => {
+      const query = (Lead as any).find(where || {}).sort(orderBy && orderBy.createdAt ? { createdAt: orderBy.createdAt === 'desc' ? -1 : 1 } : undefined).limit(take || 0);
+      return await query.lean();
+    },
+    upsert: async ({ where, update, create }: any) => {
+      const doc = await (Lead as any).findOneAndUpdate(
+        { facebookId: where.facebookId },
+        { $set: { ...update, facebookId: where.facebookId } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      return doc?.toObject ? doc.toObject() : doc;
+    },
+    create: async ({ data }: any) => (Lead as any).create(data),
+    findUnique: async ({ where }: any) => {
+      const doc = await (Lead as any).findOne({ facebookId: where.facebookId }).lean();
+      return doc;
+    }
+  },
+  workflowExecution: {
+    findMany: async ({ where, orderBy, take }: any) => {
+      const query = (WorkflowExecution as any).find(where || {}).sort(orderBy && orderBy.createdAt ? { createdAt: orderBy.createdAt === 'desc' ? -1 : 1 } : undefined).limit(take || 0);
+      return await query.lean();
+    },
+    create: async ({ data }: any) => (WorkflowExecution as any).create(data),
+    update: async ({ where, data }: any) => {
+      const doc = await (WorkflowExecution as any).findByIdAndUpdate(where.id, { $set: data }, { new: true, runValidators: true });
+      return doc?.toObject ? doc.toObject() : doc;
+    }
+  },
+  job: {
+    create: async ({ data }: any) => (Job as any).create(data),
+    findMany: async ({ where, orderBy, take }: any) => {
+      const query = (Job as any).find(where || {}).sort(orderBy && orderBy.createdAt ? { createdAt: orderBy.createdAt === 'asc' ? 1 : -1 } : undefined).limit(take || 0);
+      return await query.lean();
+    },
+    update: async ({ where, data }: any) => {
+      const doc = await (Job as any).findByIdAndUpdate(where.id, { $set: data }, { new: true, runValidators: true });
+      return doc?.toObject ? doc.toObject() : doc;
+    }
+  }
+};
 
 const FB_APP_ID = process.env.FACEBOOK_APP_ID;
 const FB_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 const FB_VERIFY_TOKEN = process.env.FACEBOOK_VERIFY_TOKEN || "LMS_PRO_SECRET_2024";
 const APP_URL = process.env.APP_URL || "";
+const DEFAULT_USER_EMAIL = "ss";
+const DEFAULT_USER_PASSWORD = "sss";
+
+async function ensureDefaultUser() {
+  const existing = await prisma.user.findUnique({ where: { email: DEFAULT_USER_EMAIL } });
+  if (existing) return existing;
+
+  const hashed = await bcrypt.hash(DEFAULT_USER_PASSWORD, 10);
+  const created = await prisma.user.create({ data: { email: DEFAULT_USER_EMAIL, password: hashed } });
+
+  debugLog(`Default user created: ${created.email}`);
+  return created;
+}
 
 async function startServer() {
   const app = express();
@@ -62,6 +285,7 @@ async function startServer() {
   try {
     await prisma.$connect();
     debugLog("Prisma Database connected successfully.");
+    await ensureDefaultUser();
   } catch (err: any) {
     debugLog(`Prisma Connection FATAL Error: ${err.message}`);
     // If database is malformed, we could try to handle it here, but usually, it requires a fresh db push.
@@ -125,24 +349,33 @@ async function startServer() {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: "Email and password are required" });
     debugLog(`Login attempt: ${email}`);
+
     let user = await prisma.user.findUnique({ where: { email } });
+    if (!user && email === DEFAULT_USER_EMAIL) {
+      const hashed = await bcrypt.hash(DEFAULT_USER_PASSWORD, 10);
+      user = await prisma.user.create({ data: { email: DEFAULT_USER_EMAIL, password: hashed } });
+      debugLog(`Default user created on login: ${user.id ?? user._id}`);
+    }
+
     if (!user) {
       const hashed = await bcrypt.hash(password, 10);
       user = await prisma.user.create({ data: { email, password: hashed } });
-      debugLog(`New user created: ${user.id}`);
+      debugLog(`New user created: ${user.id ?? user._id}`);
     } else {
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) return res.status(401).json({ error: "Invalid credentials" });
     }
-    (req.session as any).userId = user.id;
-    res.json(user);
+
+    const sessionUserId = String(user.id ?? user._id);
+    (req.session as any).userId = sessionUserId;
+    res.json(normalizeMongoDoc(user));
   });
 
   app.get("/api/auth/me", async (req, res) => {
     const userId = (req.session as any).userId;
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    res.json(user);
+    res.json(normalizeMongoDoc(user));
   });
 
   app.post("/api/auth/logout", (req, res) => {
@@ -163,7 +396,7 @@ async function startServer() {
         where: { id: userId },
         data: { webhookUrl }
       });
-      res.json(user);
+      res.json(normalizeMongoDoc(user));
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -463,7 +696,7 @@ async function startServer() {
       where: { userId },
       include: { page: true }
     });
-    res.json(workflows);
+    res.json(normalizeMongoDoc(workflows));
   });
 
   // --- External Hooks (WP, Website, YouTube) ---
@@ -473,19 +706,42 @@ async function startServer() {
     
     debugLog(`EXTERNAL HOOK RECEIVED: Source: ${source}, User: ${userId}`);
 
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return res.status(400).json({ error: "Lead payload must be a JSON object" });
+    }
+
     // Verify user exists
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(404).json({ error: "User not found" });
+
+    let leadData = body;
+    let leadId = `ext_${source}_${Date.now()}`;
+    if (source === "youtube") {
+      const fields: Record<string, unknown> = {};
+      if (Array.isArray(body.user_column_data)) {
+        for (const field of body.user_column_data) {
+          if (!field || typeof field !== "object") continue;
+          const value = field.string_value ?? field.value ?? "";
+          if (field.column_name) fields[field.column_name] = value;
+          if (field.column_id) fields[field.column_id] = value;
+        }
+      }
+
+      leadData = { ...body, ...fields, fields };
+      if (body.lead_id !== undefined && body.lead_id !== null) {
+        leadId = `ext_youtube_${userId}_${String(body.lead_id)}`;
+      }
+    }
 
     // Inject job into engine
     const job = await prisma.job.create({
       data: {
         type: "PROCESS_LEAD",
         payload: JSON.stringify({
-          source: source, // 'wp', 'website', 'youtube', 'linkedin'
+          source,
           userId: userId,
-          data: body,
-          id: `ext_${source}_${Date.now()}`
+          data: leadData,
+          id: leadId
         }),
         status: "PENDING"
       }
@@ -531,7 +787,7 @@ async function startServer() {
         source: source || "facebook"
       }
     });
-    res.json(workflow);
+    res.json(normalizeMongoDoc(workflow));
   });
 
   app.put("/api/workflows/:id", async (req, res) => {
@@ -549,10 +805,25 @@ async function startServer() {
           source: source || "facebook"
         }
       });
-      res.json(workflow);
+      res.json(normalizeMongoDoc(workflow));
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
+  });
+
+  app.patch("/api/workflows/:id", async (req, res) => {
+    const userId = (req.session as any).userId;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    if (typeof req.body.active !== "boolean") {
+      return res.status(400).json({ error: "Active must be a boolean" });
+    }
+
+    const workflow = await prisma.workflow.update({
+      where: { id: req.params.id, userId },
+      data: { active: req.body.active }
+    });
+    if (!workflow) return res.status(404).json({ error: "Workflow not found" });
+    res.json(normalizeMongoDoc(workflow));
   });
 
   // Connections (Pages)
@@ -563,7 +834,7 @@ async function startServer() {
       return res.status(401).json({ error: "Unauthorized" });
     }
     const pages = await prisma.page.findMany({ where: { userId } });
-    res.json(pages);
+    res.json(normalizeMongoDoc(pages));
   });
 
   const subscribePageToWebhooks = async (pageId: string, accessToken: string) => {
@@ -792,9 +1063,13 @@ async function startServer() {
               create: { facebookId: payload.leadgen_id, formId: formId, data: JSON.stringify(leadData) }
             });
 
-            workflows = await prisma.workflow.findMany({ 
-              where: { pageId: pageId, active: true, source: "facebook" } 
-            });
+            if (page.user?.fbUserId) {
+              workflows = await prisma.workflow.findMany({
+                where: { pageId: pageId, active: true, source: "facebook" }
+              });
+            } else {
+              debugLog(`Skipping Facebook workflows for page ${pageId}: Facebook account is not connected`);
+            }
           } else {
             // --- External Hook Logic (WP, Website, YouTube) ---
             leadData = payload.data;

@@ -7,7 +7,7 @@ generator client {
 // Development: DATABASE_PROVIDER=sqlite  DATABASE_URL=file:./dev.db
 // Production:  DATABASE_PROVIDER=postgresql  DATABASE_URL=******host:5432/dbname
 datasource db {
-  provider = env("DATABASE_PROVIDER")
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 

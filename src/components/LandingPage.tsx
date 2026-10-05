@@ -56,15 +56,24 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
             </div>
             
             <div className="hidden md:flex items-center gap-7">
-              {['Features', 'Integrations', 'Pricing', 'Docs'].map((item) => (
+              {[
+                { label: 'Features', href: '#features' },
+                { label: 'Integrations', href: '#integrations' }
+              ].map((item) => (
                 <a 
-                  key={item} 
-                  href="#" 
+                  key={item.label}
+                  href={item.href}
                   className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                  {item}
+                  {item.label}
                 </a>
               ))}
+              <button
+                onClick={() => setActiveLegalPage("docs")}
+                className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Docs
+              </button>
             </div>
           </div>
 
@@ -86,11 +95,11 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-36 pb-20 px-6 bg-gradient-to-b from-violet-50/60 to-white overflow-hidden">
+      <section className="relative pt-28 sm:pt-36 pb-16 sm:pb-20 px-4 sm:px-6 bg-gradient-to-b from-violet-50/60 to-white overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_0%,rgba(124,58,237,0.08),transparent_60%)] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
+          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
             {/* Left: Copy */}
             <div className="flex-1 text-center lg:text-left">
               <motion.div
@@ -103,14 +112,14 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
                   <span className="text-xs font-semibold text-violet-700">Lead Automation Platform</span>
                 </div>
 
-                <h1 className="text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-gray-900 mb-6">
-                  Automate your leads,<br />
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-gray-900 mb-6">
+                  Automate your leads,<br className="hidden sm:block" />
                   <span className="text-violet-600">
                     grow your CRM.
                   </span>
                 </h1>
                 <p className="text-lg text-gray-500 max-w-xl mb-8 leading-relaxed">
-                  Capture leads from Facebook, LinkedIn, Website and more. Instantly route them to any CRM or webhook — no coding required.
+                  Capture leads from Facebook, LinkedIn, YouTube, WordPress, and website forms. Route submissions to a CRM or webhook with source-aware workflows.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3 mb-10">
@@ -151,18 +160,18 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
         </div>
       </section>
 
-      {/* Social Proof */}
+      {/* Product Capabilities */}
       <section className="py-10 border-y border-gray-100 bg-gray-50/50">
         <div className="max-w-5xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
             {[
-              { value: "50K+", label: "Leads Processed" },
-              { value: "99.9%", label: "Uptime" },
-              { value: "< 1s", label: "Avg Delivery Time" },
-              { value: "10+", label: "Integrations" },
+              { value: "Multiple sources", label: "One lead intake workspace" },
+              { value: "Per-source rules", label: "Separate workflow logic" },
+              { value: "Field mapping", label: "Shape CRM payloads" },
+              { value: "Run history", label: "Review lead delivery" },
             ].map((s) => (
               <div key={s.label} className="text-center">
-                <div className="text-3xl font-bold text-gray-900">{s.value}</div>
+                <div className="text-base font-bold text-gray-900">{s.value}</div>
                 <div className="text-sm text-gray-500 mt-1">{s.label}</div>
               </div>
             ))}
@@ -171,7 +180,7 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 px-6">
+      <section id="features" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">How AutoMesh works</h2>
@@ -228,7 +237,7 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 px-6 bg-gray-50/50">
+      <section id="integrations" className="py-24 px-6 bg-gray-50/50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Everything you need</h2>
@@ -241,37 +250,37 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
                 icon: <Zap size={20} className="text-violet-600" />,
                 bg: "bg-violet-50",
                 title: "Real-Time Delivery",
-                desc: "Leads are forwarded to your CRM within milliseconds of submission."
+                desc: "Incoming leads are routed through your configured workflow to a CRM endpoint."
               },
               {
                 icon: <Globe size={20} className="text-blue-600" />,
                 bg: "bg-blue-50",
                 title: "Multi-Source Support",
-                desc: "Facebook, LinkedIn, Website, YouTube, WordPress — all in one place."
+                desc: "Facebook, LinkedIn, Website, YouTube, and WordPress sources in one workspace."
               },
               {
                 icon: <Layers size={20} className="text-indigo-600" />,
                 bg: "bg-indigo-50",
                 title: "Smart Field Mapping",
-                desc: "Visual mapping with dynamic variables like {{full_name}}, {{email}}."
+                desc: "Map submitted lead fields to CRM keys with reusable variables."
               },
               {
                 icon: <Users size={20} className="text-emerald-600" />,
                 bg: "bg-emerald-50",
                 title: "Lead History & Logs",
-                desc: "Full audit trail of every lead received, mapped, and delivered."
+                desc: "Review captured leads and their workflow execution history."
               },
               {
                 icon: <Check size={20} className="text-amber-600" />,
                 bg: "bg-amber-50",
                 title: "Auth & Security",
-                desc: "****** Basic auth, and custom API header support."
+                desc: "Configure Bearer, Basic Auth, or custom API headers for outbound requests."
               },
               {
                 icon: <Star size={20} className="text-pink-600" />,
                 bg: "bg-pink-50",
                 title: "Multiple Workflows",
-                desc: "Run unlimited automation rules per page, form, or source."
+                desc: "Create separate automation rules by page, form, or lead source."
               }
             ].map((f, i) => (
               <motion.div
@@ -298,7 +307,7 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
         <div className="max-w-4xl mx-auto bg-violet-600 rounded-3xl p-12 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.1),transparent_70%)] pointer-events-none" />
           <h2 className="text-4xl font-bold text-white mb-4 relative z-10">Ready to automate?</h2>
-          <p className="text-lg text-violet-200 mb-8 relative z-10">Join thousands of businesses using AutoMesh to capture and route leads automatically.</p>
+          <p className="text-lg text-violet-200 mb-8 relative z-10">Set up a source, map your lead fields, and route submissions to your CRM.</p>
           <Button
             onClick={() => setModalType("signup")}
             className="h-12 px-10 bg-white text-violet-700 hover:bg-violet-50 font-bold text-base rounded-xl shadow-lg relative z-10"

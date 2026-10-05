@@ -120,13 +120,33 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
+  }
+
   html {
     @apply font-sans;
-    }
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at top left, rgba(139, 92, 246, 0.18), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.12), transparent 20%),
+      linear-gradient(135deg, #f8fafc 0%, #eef2ff 38%, #f8fafc 100%);
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .app-shell {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  }
 }
 
 @layer utilities {
@@ -134,9 +154,11 @@
     width: 4px;
     height: 4px;
   }
+
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
+
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-gray-200 rounded-full hover:bg-gray-300 transition-colors;
   }

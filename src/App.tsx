@@ -10,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  BarChart3, 
   Settings, 
   Zap, 
   Facebook, 
@@ -170,20 +169,20 @@ export default function App() {
   if (!user) return <LandingPage onAuthSuccess={handleLogin} />;
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
+    <div className="app-shell flex h-dvh min-h-[100dvh] text-gray-900 font-sans overflow-hidden">
       <Toaster position="top-right" />
       
       {/* Sidebar Navigation */}
-      <aside className="w-60 bg-white border-r border-gray-100 flex flex-col shrink-0 shadow-sm">
-        <div className="p-5 flex items-center gap-2.5 border-b border-gray-100">
+      <aside className="w-14 sm:w-60 bg-white border-r border-gray-100 flex flex-col shrink-0 shadow-sm">
+        <div className="p-3 sm:p-5 flex items-center justify-center sm:justify-start gap-2.5 border-b border-gray-100">
           <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-violet-600/25">
             <Zap size={18} className="text-white fill-white" />
           </div>
-          <span className="font-bold tracking-tight text-lg text-gray-900">AutoMesh</span>
+          <span className="hidden sm:inline font-bold tracking-tight text-lg text-gray-900">AutoMesh</span>
         </div>
         
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          <div className="text-[10px] font-bold text-gray-400 uppercase px-3 py-2 mt-1 mb-0.5 tracking-widest">Management</div>
+        <nav className="flex-1 p-2 sm:p-3 space-y-0.5 overflow-y-auto">
+          <div className="hidden sm:block text-[10px] font-bold text-gray-400 uppercase px-3 py-2 mt-1 mb-0.5 tracking-widest">Management</div>
           <NavItem active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")}>
             <LayoutDashboard size={16} /> Dashboard
           </NavItem>
@@ -203,12 +202,9 @@ export default function App() {
             <Users size={16} /> Lead Logs
           </NavItem>
 
-          <div className="text-[10px] font-bold text-gray-400 uppercase px-3 py-2 mt-4 mb-0.5 tracking-widest">System</div>
+          <div className="hidden sm:block text-[10px] font-bold text-gray-400 uppercase px-3 py-2 mt-4 mb-0.5 tracking-widest">System</div>
           <NavItem active={activeTab === "system"} onClick={() => setActiveTab("system")}>
             <Wrench size={16} /> System Tools
-          </NavItem>
-          <NavItem active={false} onClick={() => {}}>
-            <Activity size={16} /> Hangfire
           </NavItem>
           <NavItem active={activeTab === "api_explorer"} onClick={() => setActiveTab("api_explorer")}>
              <History size={16} /> API Explorer
@@ -218,13 +214,13 @@ export default function App() {
           </NavItem>
         </nav>
 
-        <div className="p-3 border-t border-gray-100">
-          <div className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-gray-50 transition-colors">
+        <div className="p-2 sm:p-3 border-t border-gray-100">
+          <div className="flex items-center justify-center sm:justify-between px-1 sm:px-2 py-2 rounded-xl hover:bg-gray-50 transition-colors">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-700 uppercase">
                 {user?.email?.substring(0, 2) || "AA"}
               </div>
-              <div>
+              <div className="hidden sm:block">
                 <p className="text-xs font-semibold text-gray-800 leading-none truncate max-w-[100px]">{user?.email || "Admin"}</p>
                 <p className="text-[10px] text-gray-400 mt-0.5">Free Plan</p>
               </div>
@@ -243,7 +239,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
-        <header className="h-14 bg-white border-b border-gray-100 px-6 flex items-center justify-between shrink-0">
+        <header className="h-14 bg-white border-b border-gray-100 px-3 sm:px-6 flex items-center justify-between shrink-0">
           <div>
             <h1 className="text-sm font-bold text-gray-900 capitalize">{activeTab === "api_explorer" ? "API Explorer" : activeTab}</h1>
           </div>
@@ -254,15 +250,15 @@ export default function App() {
                 setIsBuilderOpen(true);
                 setEditingWorkflow(null);
               }}
-              className="bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs px-4 h-8 rounded-lg shadow-sm"
+              className="bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs px-2 sm:px-4 h-8 rounded-lg shadow-sm"
             >
-              <Plus size={14} className="mr-1.5" /> New Workflow
+              <Plus size={14} className="sm:mr-1.5" /> <span className="hidden sm:inline">New Workflow</span>
             </Button>
           </div>
         </header>
 
         {/* View Content */}
-        <div className="p-6 space-y-5 flex-1 overflow-hidden flex flex-col">
+        <div className="p-3 sm:p-6 space-y-5 flex-1 min-h-0 overflow-hidden flex flex-col">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -289,7 +285,7 @@ export default function App() {
               {activeTab === "api_explorer" && <APIExplorerView />}
               {activeTab === "others" && <OtherServicesView user={user} />}
               {activeTab === "testing" && <TestingView connections={connections} onRefresh={fetchConnections} />}
-              {activeTab === "system" && <SystemView onRefresh={fetchConnections} />}
+              {activeTab === "system" && <SystemView onRefresh={fetchConnections} workflows={workflows} connections={connections} />}
               {activeTab === "leads" && <LeadsView />}
               {activeTab === "settings" && <SettingsView user={user} onRefreshUser={fetchUser} />}
             </motion.div>
@@ -301,45 +297,84 @@ export default function App() {
 }
 
 function NavItem({ active, children, onClick }: { active: boolean, children: ReactNode, onClick: () => void }) {
+  const label = React.Children.toArray(children).find((child) => typeof child === "string");
+
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-medium ${
+      aria-label={typeof label === "string" ? label : undefined}
+      title={typeof label === "string" ? label : undefined}
+      className={`w-full flex items-center justify-center sm:justify-start gap-2.5 px-2 sm:px-3 py-2 rounded-lg transition-all duration-150 text-sm font-medium ${
         active 
           ? "bg-violet-50 text-violet-700 font-semibold" 
           : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
       }`}
     >
-      {children}
+      {React.Children.map(children, (child) =>
+        typeof child === "string" ? <span className="hidden sm:inline">{child}</span> : child
+      )}
     </button>
   );
 }
 
 function DashboardView({ workflows, connections }: any) {
+  const [leads, setLeads] = useState<any[] | null>(null);
+  const [executions, setExecutions] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchMetrics = async () => {
+      const [leadsResponse, executionsResponse] = await Promise.all([
+        fetch("/api/leads", { credentials: "include" }),
+        fetch("/api/executions", { credentials: "include" })
+      ]);
+      const [nextLeads, nextExecutions] = await Promise.all([
+        leadsResponse.ok ? leadsResponse.json() : [],
+        executionsResponse.ok ? executionsResponse.json() : []
+      ]);
+      if (!cancelled) {
+        setLeads(nextLeads);
+        setExecutions(nextExecutions);
+      }
+    };
+
+    fetchMetrics().catch(() => {
+      if (!cancelled) {
+        setLeads([]);
+        setExecutions([]);
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const activeWorkflows = workflows.filter((workflow: any) => workflow.active).length;
+  const successRate = executions?.length
+    ? `${Math.round(executions.filter((execution: any) => execution.status === "SUCCESS").length / executions.length * 100)}%`
+    : "—";
+
   return (
     <div className="space-y-5 flex flex-col flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
       {/* Metric Overview */}
-      <div className="grid grid-cols-4 gap-4 shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 shrink-0">
         <StatCard 
-          title="Leads (24H)" 
-          value="1,248" 
-          trend="+12% from yesterday" 
-          trendColor="text-emerald-600" 
+          title="Recent leads"
+          value={leads === null ? "—" : leads.length}
+          sub="Latest 50 captured"
           icon={<Users size={18} className="text-violet-600" />}
           iconBg="bg-violet-50"
         />
         <StatCard 
-          title="Success Rate" 
-          value="99.8%" 
-          sub="Avg Latency: 420ms" 
+          title="Recent success rate"
+          value={successRate}
+          sub={executions === null ? "Loading runs" : `Last ${executions.length} runs`}
           valueColor="text-emerald-600" 
           icon={<Activity size={18} className="text-emerald-600" />}
           iconBg="bg-emerald-50"
         />
         <StatCard 
-          title="Active Jobs" 
-          value="12" 
-          sub="0 retries pending" 
+          title="Active workflows"
+          value={activeWorkflows}
+          sub={`of ${workflows.length} total`}
           icon={<Zap size={18} className="text-amber-600" />}
           iconBg="bg-amber-50"
         />
@@ -352,31 +387,47 @@ function DashboardView({ workflows, connections }: any) {
         />
       </div>
 
-      <div className="flex-1 flex gap-5 min-h-0">
-        <Card className="flex-[3] bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col xl:flex-row gap-4 sm:gap-5 min-h-0">
+        <Card className="flex-[3] min-h-[260px] bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
           <CardHeader className="p-5 border-b border-gray-50 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold text-gray-700">Pipeline Throughput</CardTitle>
-            <span className="text-[10px] text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded">Live</span>
+            <CardTitle className="text-sm font-semibold text-gray-700">Recent Lead Activity</CardTitle>
+            <span className="text-[10px] text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded">Latest 5</span>
           </CardHeader>
-          <CardContent className="flex-1 flex items-center justify-center p-6">
-             <div className="w-full h-full bg-gray-50 border border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400">
-               <BarChart3 size={40} className="text-gray-200 mb-3" />
-               <p className="text-xs font-medium text-gray-400">Analytics coming soon</p>
-             </div>
+          <CardContent className="flex-1 p-4 sm:p-6 overflow-y-auto">
+            {leads === null ? (
+              <p className="text-xs text-gray-400 text-center py-8">Loading lead activity...</p>
+            ) : leads.length ? (
+              <div className="divide-y divide-gray-100">
+                {leads.slice(0, 5).map((lead: any) => {
+                  const data = JSON.parse(lead.data || "{}");
+                  return (
+                    <div key={lead.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-gray-800 truncate">{data.name || data.full_name || "Lead received"}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{lead.form?.page?.name || "Connected source"}</p>
+                      </div>
+                      <time className="shrink-0 text-[10px] text-gray-400">{new Date(lead.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-full min-h-[150px] flex flex-col items-center justify-center text-center">
+                <p className="text-xs font-medium text-gray-500">No leads captured yet</p>
+                <p className="text-[11px] text-gray-400 mt-1">New submissions will appear here.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="flex-[1.5] bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+        <Card className="flex-[1.5] min-h-[240px] bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
           <CardHeader className="p-5 border-b border-gray-50">
             <CardTitle className="text-sm font-semibold text-gray-700">System Status</CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3">
-            <ConnectionRow name="Facebook Lead API" status="active" />
-            <ConnectionRow name="WhatsApp Business" status="active" />
-            <ConnectionRow name="Database" status="active" />
-            <ConnectionRow name="Webhook Engine" status="active" />
-            <ConnectionRow name="SMTP Relay" status="idle" />
-            <ConnectionRow name="Cache Layer" status="active" />
+            <ConnectionRow name="Meta pages" status={connections.length ? "active" : "idle"} />
+            <ConnectionRow name="Workflow engine" status={activeWorkflows ? "active" : "idle"} />
+            <ConnectionRow name="Recent lead intake" status={leads?.length ? "active" : "idle"} />
           </CardContent>
         </Card>
       </div>
@@ -419,14 +470,30 @@ function WorkflowsView({ workflows, connections, onRefresh, isBuilderOpen, setIs
     return (w.source || "facebook") === sourceFilter;
   });
 
+  const toggleWorkflow = async (workflow: any) => {
+    try {
+      const response = await fetch(`/api/workflows/${workflow.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !workflow.active }),
+        credentials: "include"
+      });
+      if (!response.ok) throw new Error("Workflow status update failed");
+      toast.success(workflow.active ? "Workflow paused" : "Workflow resumed");
+      onRefresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Workflow status update failed");
+    }
+  };
+
   return (
-    <div className="flex-1 flex flex-col min-h-0 gap-6 overflow-hidden">
+    <div className="flex-1 flex flex-col min-h-0 gap-4 sm:gap-6 overflow-hidden">
       <div className="flex items-center justify-between mb-2 shrink-0">
         <Tabs value={sourceFilter} onValueChange={setSourceFilter} className="w-full">
-          <TabsList className="bg-slate-100/50 p-1 rounded-xl h-12 border border-slate-200">
+          <TabsList className="w-full justify-start overflow-x-auto bg-slate-100/50 p-1 rounded-xl h-12 border border-slate-200">
             <TabsTrigger 
               value="facebook" 
-              className="px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
+              className="shrink-0 px-3 sm:px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
             >
               <div className="flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest">
                 <Facebook size={14} /> Facebook
@@ -434,7 +501,7 @@ function WorkflowsView({ workflows, connections, onRefresh, isBuilderOpen, setIs
             </TabsTrigger>
             <TabsTrigger 
               value="linkedin" 
-              className="px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all"
+              className="shrink-0 px-3 sm:px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all"
             >
               <div className="flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest">
                 <Linkedin size={14} /> LinkedIn
@@ -442,7 +509,7 @@ function WorkflowsView({ workflows, connections, onRefresh, isBuilderOpen, setIs
             </TabsTrigger>
             <TabsTrigger 
               value="website" 
-              className="px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all"
+              className="shrink-0 px-3 sm:px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all"
             >
               <div className="flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest">
                 <Globe size={14} /> Website
@@ -450,7 +517,7 @@ function WorkflowsView({ workflows, connections, onRefresh, isBuilderOpen, setIs
             </TabsTrigger>
             <TabsTrigger 
               value="youtube" 
-              className="px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm transition-all"
+              className="shrink-0 px-3 sm:px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-red-600 data-[state=active]:shadow-sm transition-all"
             >
               <div className="flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest">
                 <Youtube size={14} /> YouTube
@@ -458,7 +525,7 @@ function WorkflowsView({ workflows, connections, onRefresh, isBuilderOpen, setIs
             </TabsTrigger>
             <TabsTrigger 
               value="wordpress" 
-              className="px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all"
+              className="shrink-0 px-3 sm:px-6 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all"
             >
               <div className="flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest">
                 <Layers size={14} /> WordPress
@@ -501,7 +568,7 @@ function WorkflowsView({ workflows, connections, onRefresh, isBuilderOpen, setIs
               <CardHeader className="p-5 border-b border-slate-50 flex flex-row items-center justify-between space-y-0 text-slate-100">
                 <div>
                   <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Active Automation Rules</CardTitle>
-                  <p className="text-[10px] text-slate-400 mt-1 italic font-medium">Monitoring {workflows.length} live lead-forwarding tunnels.</p>
+                  <p className="text-[10px] text-slate-400 mt-1 font-medium">{workflows.filter((workflow: any) => workflow.active).length} active of {workflows.length} workflows.</p>
                 </div>
               </CardHeader>
               <div className="flex-1 overflow-auto custom-scrollbar">
@@ -575,17 +642,29 @@ function WorkflowsView({ workflows, connections, onRefresh, isBuilderOpen, setIs
                             {rules.formId || "ALL_FORMS"}
                           </TableCell>
                           <TableCell className="text-right px-6 py-5">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors"
-                              onClick={() => {
-                                setEditingWorkflow(w);
-                                setIsBuilderOpen(true);
-                              }}
-                            >
-                              Config
-                            </Button>
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-amber-600"
+                                title={w.active ? "Pause workflow" : "Resume workflow"}
+                                aria-label={w.active ? "Pause workflow" : "Resume workflow"}
+                                onClick={() => toggleWorkflow(w)}
+                              >
+                                {w.active ? <Pause size={14} /> : <Play size={14} />}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors"
+                                onClick={() => {
+                                  setEditingWorkflow(w);
+                                  setIsBuilderOpen(true);
+                                }}
+                              >
+                                Config
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -603,10 +682,7 @@ function WorkflowsView({ workflows, connections, onRefresh, isBuilderOpen, setIs
                               }
                             </div>
                             <p className="font-medium italic">
-                              {sourceFilter === 'facebook' 
-                                ? "No automation rules detected in the current tenant." 
-                                : `Integration for ${sourceFilter.charAt(0).toUpperCase() + sourceFilter.slice(1)} coming soon.`
-                              }
+                              No {sourceFilter.charAt(0).toUpperCase() + sourceFilter.slice(1)} workflows yet.
                             </p>
                           </div>
                         </TableCell>
@@ -855,9 +931,9 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
   };
 
   return (
-    <div className="flex-1 flex flex-col gap-6">
+    <div className="flex-1 flex flex-col gap-4 sm:gap-6 min-h-0 overflow-hidden">
       {/* Builder Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={onClose} className="text-slate-400 h-9 px-2 hover:bg-slate-100">
             {"←"}
@@ -884,9 +960,9 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
         <div className={`h-full transition-all duration-500 ${step >= 3 ? "bg-indigo-600" : "bg-transparent"}`} style={{ width: "33.33%" }}></div>
       </div>
 
-      <div className="flex-1 flex gap-8 min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:gap-8 min-h-0 overflow-hidden">
         {/* Step Content */}
-        <div className="flex-[4] space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="flex-[4] min-w-0 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
           {step === 1 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
               <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm space-y-6">
@@ -897,7 +973,7 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
 
                 <div className="space-y-4">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Lead Source</label>
-                  <div className="grid grid-cols-5 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
                     <button 
                       onClick={() => setSource("facebook")}
                       className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${source === "facebook" ? "border-blue-600 bg-blue-50 text-blue-600 shadow-sm" : "border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200"}`}
@@ -1040,10 +1116,10 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
                       <div className="bg-red-600 p-2 rounded text-white shadow-lg"><Youtube size={18} /></div>
                       <div>
                         <h4 className="text-xs font-bold text-red-900 uppercase">YouTube Lead Ads</h4>
-                        <p className="text-[10px] text-red-700 font-medium">Receive lead form data from YouTube's interactive ad extensions.</p>
+                        <p className="text-[10px] text-red-700 font-medium">Receive Google Ads lead form submissions from YouTube campaigns.</p>
                       </div>
                     </div>
-                    <p className="text-[10px] text-slate-500 italic">Integration will require linking your Google Ads account in the next update.</p>
+                    <p className="text-[10px] text-slate-500 italic">Set the webhook URL in your Google Ads lead form asset. Google Ads sends submissions directly to this endpoint.</p>
                   </div>
                 )}
 
@@ -1077,13 +1153,13 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
                 </div>
                 
                 <div className="space-y-3">
-                  <div className="grid grid-cols-[180px,20px,1fr,32px] gap-4 px-2 mb-2">
+                  <div className="hidden sm:grid grid-cols-[180px,20px,1fr,32px] gap-4 px-2 mb-2">
                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight italic">Target Keys</span>
                     <span></span>
                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight italic">Mapping Logic</span>
                   </div>
                   {mappings.map((m, i) => (
-                    <div key={i} className="flex gap-4 items-start">
+                    <div key={i} className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-start">
                       <Input 
                         value={m.target} 
                         onChange={(e) => {
@@ -1092,7 +1168,7 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
                           setMappings(nm);
                         }} 
                         placeholder="CRM Key" 
-                        className="h-10 text-xs font-mono w-[180px] shrink-0 border-dashed bg-slate-50/20"
+                        className="h-10 text-xs font-mono w-full sm:w-[180px] sm:shrink-0 border-dashed bg-slate-50/20"
                       />
                       <div className="h-10 flex items-center">
                         <span className="text-slate-300 font-bold scale-125">{"→"}</span>
@@ -1138,7 +1214,7 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
                    />
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-4">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Authentication Protocol</label>
                     <Select value={authType} onValueChange={setAuthType}>
@@ -1180,7 +1256,7 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
                     <div className="bg-amber-50 p-1.5 rounded text-amber-600"><Key size={14} /></div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-700">Custom Header API Key (Optional)</label>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <Input 
                       value={apiKeyName} 
                       onChange={(e) => setApiKeyName(e.target.value)} 
@@ -1212,7 +1288,7 @@ function WorkflowBuilder({ user, connections, onClose, onSave, initialData }: an
         </div>
 
         {/* Builder Sidebar - Schematic Visualizer */}
-        <div className="w-56 space-y-4 shrink-0 px-2 border-l border-slate-50">
+        <div className="hidden lg:block w-56 space-y-4 shrink-0 px-2 border-l border-slate-50">
            <Card className="bg-slate-950 border-0 shadow-2xl rounded-2xl overflow-hidden h-fit">
               <CardHeader className="p-4 border-b border-white/5 bg-white/5">
                  <CardTitle className="text-[9px] font-bold uppercase tracking-widest text-white/50 flex items-center gap-2">
@@ -1530,7 +1606,7 @@ function ConnectionsView({ user, connections, onConnect, onRefresh }: any) {
           <CardDescription className="text-[11px] text-slate-500 font-medium pt-1">Configure direct lead hooks from your company website or custom landing pages.</CardDescription>
         </CardHeader>
         <CardContent className="p-6">
-           <div className="grid grid-cols-2 gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-3">
                  <h4 className="text-[10px] font-bold text-indigo-900 uppercase">Incoming Webhook</h4>
                  <p className="text-[10px] text-indigo-600 font-medium leading-relaxed italic">Point your website forms to this dedicated endpoint cluster to ingest lead data.</p>
@@ -1750,7 +1826,7 @@ function OtherServicesView({ user }: { user: any }) {
              <Youtube size={32} className="text-red-200" />
              <div className="text-center">
                <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest">YouTube Ads Webhook</p>
-               <p className="text-[10px] text-red-500 mt-1 italic">Configure your YouTube Lead extensions to this endpoint:</p>
+               <p className="text-[10px] text-red-500 mt-1 italic">Set this as the webhook URL for your Google Ads lead form asset:</p>
                <div className="mt-2 bg-white px-4 py-2 rounded border border-red-100 font-mono text-[9px] text-slate-500 break-all select-all">
                   {`${window.location.origin}/api/hooks/youtube/${user?.id || 'uid'}`}
                </div>
@@ -1758,9 +1834,12 @@ function OtherServicesView({ user }: { user: any }) {
              <Button
                size="sm"
                className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest px-6 h-9"
-               onClick={() => toast.info("Google Ads Linking coming soon.")}
+               onClick={() => {
+                 navigator.clipboard.writeText(`${window.location.origin}/api/hooks/youtube/${user?.id || 'uid'}`);
+                 toast.success("YouTube lead webhook URL copied");
+               }}
              >
-               Link Google Ads Account
+               Copy Webhook URL
              </Button>
           </div>
         </CardContent>
@@ -1856,7 +1935,7 @@ function OtherServicesView({ user }: { user: any }) {
   );
 }
 
-function SystemView({ onRefresh }: { onRefresh: () => void }) {
+function SystemView({ onRefresh, workflows, connections }: { onRefresh: () => void, workflows: any[], connections: any[] }) {
   return (
     <div className="flex-1 flex flex-col gap-6 min-h-0 overflow-y-auto custom-scrollbar pr-2 pb-6">
       <div className="flex items-center justify-between mb-2">
@@ -1952,25 +2031,25 @@ function SystemView({ onRefresh }: { onRefresh: () => void }) {
         <CardHeader className="p-4 border-b border-slate-50 flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-              <Activity size={16} className="text-indigo-600" /> Database Integrity Health
+              <Activity size={16} className="text-indigo-600" /> Workspace Inventory
             </CardTitle>
-            <CardDescription className="text-[10px] text-slate-400">Current system table state verified across local persistence layer.</CardDescription>
+            <CardDescription className="text-[10px] text-slate-400">Current connected pages and workflow configuration.</CardDescription>
           </div>
-          <Badge className="bg-emerald-100 text-emerald-700 border-0 text-[10px] uppercase font-bold px-3">Sync Status: Stable</Badge>
+          <Badge className="bg-slate-100 text-slate-600 border-0 text-[10px] uppercase font-bold px-3">Current account</Badge>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
-              <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Users</p>
-              <p className="text-lg font-mono font-bold text-slate-900">VERIFIED</p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Meta Pages</p>
+              <p className="text-lg font-mono font-bold text-slate-900">{connections.length}</p>
             </div>
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
               <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Workflows</p>
-              <p className="text-lg font-mono font-bold text-slate-900">ACTIVE</p>
+              <p className="text-lg font-mono font-bold text-slate-900">{workflows.length}</p>
             </div>
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
-              <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Logs</p>
-              <p className="text-lg font-mono font-bold text-slate-900">WRITABLE</p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Active Workflows</p>
+              <p className="text-lg font-mono font-bold text-slate-900">{workflows.filter((workflow) => workflow.active).length}</p>
             </div>
           </div>
         </CardContent>
@@ -1989,6 +2068,7 @@ function TestingView({ connections, onRefresh }: any) {
   });
   const [logs, setLogs] = useState("Loading system logs...");
   const [forms, setForms] = useState<any[]>([]);
+  const [metaConfigured, setMetaConfigured] = useState<boolean | null>(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -2000,6 +2080,10 @@ function TestingView({ connections, onRefresh }: any) {
       }
     };
     fetchLogs();
+    fetch("/api/health")
+      .then((response) => response.ok ? response.json() : null)
+      .then((health) => setMetaConfigured(health ? Boolean(health.metaConfigured) : false))
+      .catch(() => setMetaConfigured(false));
     const interval = setInterval(fetchLogs, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -2134,7 +2218,7 @@ function TestingView({ connections, onRefresh }: any) {
               </Select>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-500 uppercase">Lead Name</label>
                 <Input className="text-[11px] border-slate-200 h-10" value={simulationData.name} onChange={(e) => setSimulationData({ ...simulationData, name: e.target.value })} />
@@ -2160,17 +2244,19 @@ function TestingView({ connections, onRefresh }: any) {
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <Activity size={16} className="text-emerald-600" /> Infrastructure Health
             </CardTitle>
-            <CardDescription className="text-[11px] text-slate-400">Real-time status of system components.</CardDescription>
+            <CardDescription className="text-[11px] text-slate-400">Current Meta configuration and connected sources.</CardDescription>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] text-slate-500 font-mono">META_AUTH_CONFIG</span>
-                  <span className="text-[9px] text-emerald-600 font-bold">READY</span>
+                  <span className={`text-[9px] font-bold ${metaConfigured ? "text-emerald-600" : "text-amber-600"}`}>
+                    {metaConfigured === null ? "CHECKING" : metaConfigured ? "CONFIGURED" : "MISSING"}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] text-slate-500 font-mono">DB_CLUSTER_HEALTH</span>
-                  <span className="text-[9px] text-emerald-600 font-bold">OPTIMAL</span>
+                  <span className="text-[9px] text-slate-500 font-mono">CONNECTED_PAGES</span>
+                  <span className="text-[9px] text-slate-600 font-bold">{connections.length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] text-slate-500 font-mono">REDIRECT_DETECTED</span>
@@ -2205,7 +2291,7 @@ function TestingView({ connections, onRefresh }: any) {
         </Card>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 shrink-0">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6 shrink-0">
         <Card className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col">
           <CardHeader className="p-6 border-b border-slate-50 bg-indigo-50/20">
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-indigo-700 flex items-center gap-2">
@@ -2247,17 +2333,17 @@ function TestingView({ connections, onRefresh }: any) {
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <Activity size={16} className="text-emerald-600" /> Webhook Health
             </CardTitle>
-            <CardDescription className="text-[11px] text-slate-400">Real-time status of system components.</CardDescription>
+            <CardDescription className="text-[11px] text-slate-400">Callback route and verification behavior.</CardDescription>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] text-slate-500 font-mono">META_WEBHOOK_STATUS</span>
-                  <span className="text-[9px] text-emerald-600 font-bold">LISTENING</span>
+                  <span className="text-[9px] text-emerald-600 font-bold">ROUTE AVAILABLE</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] text-slate-500 font-mono">AUTH_CHALLENGE_MODE</span>
-                  <span className="text-[9px] text-emerald-600 font-bold">ACTIVE_VERIFIED</span>
+                  <span className="text-[9px] text-slate-600 font-bold">TOKEN CHECK ENABLED</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] text-slate-500 font-mono">SHARED_APP_PROXY</span>
@@ -2374,7 +2460,7 @@ function SettingsView({ user, onRefreshUser }: { user: any, onRefreshUser: () =>
             <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Global Webhook Endpoint</label>
             <Badge variant="outline" className="text-[9px] font-bold text-indigo-600 bg-indigo-50 border-indigo-100 px-2 py-0.5 uppercase tracking-tighter">Event: LEAD_RECEIVED</Badge>
           </div>
-          <p className="text-[10px] text-slate-400 mb-2">We will POST a JSON payload to this URL every time a new lead is captured from your Meta forms.</p>
+          <p className="text-[10px] text-slate-400 mb-2">We will POST a JSON payload to this URL when a lead is captured from a connected source.</p>
           <div className="flex gap-2">
             <Input 
               value={webhookUrl} 
@@ -2450,15 +2536,15 @@ function LeadsView() {
   const selectedLead = leads.find(l => l.id === selectedLeadId);
 
   return (
-    <div className="flex-1 flex gap-6 min-h-0">
+    <div className="flex-1 flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-0 overflow-y-auto lg:overflow-hidden custom-scrollbar pb-4 lg:pb-0">
       {/* Table Section */}
-      <Card className="flex-[3] bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
-        <CardHeader className="p-5 border-b border-slate-50 flex-row items-center justify-between space-y-0">
+      <Card className="flex-[3] min-h-[360px] bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
+        <CardHeader className="p-4 sm:p-5 border-b border-slate-50 flex-col sm:flex-row items-start sm:items-center justify-between gap-3 space-y-0">
           <div>
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Global Consumption Log</h2>
             {selectedLeadId && <p className="text-[9px] text-indigo-600 font-bold mt-1 uppercase tracking-tight">Viewing history for: {selectedLead?.facebookId}</p>}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
              {selectedLeadId && (
                <Button 
                 variant="ghost" 
@@ -2535,7 +2621,7 @@ function LeadsView() {
       </Card>
 
       {/* Dark Console Section */}
-      <div className="flex-[2] bg-slate-900 rounded-xl border border-slate-800 shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/5">
+      <div className="flex-[2] min-h-[360px] bg-slate-900 rounded-xl border border-slate-800 shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/5">
         <div className="p-5 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900/50">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${selectedLeadId ? "bg-indigo-500 animate-pulse" : "bg-emerald-500"} shadow-[0_0_8px_rgba(16,185,129,0.5)]`}></div>

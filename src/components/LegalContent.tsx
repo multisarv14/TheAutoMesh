@@ -15,18 +15,18 @@ export default function LegalContent({ type, onClose }: LegalContentProps) {
       title: "Documentation",
       icon: <Book className="text-blue-400" />,
       sections: [
-        {
-          title: "Getting Started",
-          text: "Welcome to AI Studio (The AutoMesh). To start, create a new pipeline using our visual builder. Drag nodes from the library to the canvas and connect them to create complex AI workflows."
-        },
-        {
-          title: "Model Deployment",
-          text: "Once your workflow is tested, click 'Deploy' to generate a production-ready API endpoint. This endpoint can be integrated into any application using standard REST calls."
-        },
-        {
-          title: "Custom Models",
-          text: "Upload your own specialized models or use our library of 400+ pre-trained architectures including GPT-4o, Claude, and Stable Diffusion."
-        }
+          {
+            title: "Connect a lead source",
+            text: "Connect a Meta Page for Facebook leads, or copy a source webhook URL for website, WordPress, and Google Ads lead form submissions."
+          },
+          {
+            title: "Build a workflow",
+            text: "Choose a lead source, set the destination CRM endpoint, map incoming fields to the keys your CRM expects, and configure outbound authentication when needed."
+          },
+          {
+            title: "Test and review delivery",
+            text: "Use the Testing view to simulate lead intake, then review captured leads and workflow execution logs in Lead Logs."
+          }
       ]
     },
     privacy: {
